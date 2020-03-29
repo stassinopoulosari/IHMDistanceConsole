@@ -1,0 +1,51 @@
+/* STICKY FOOTER FROM BOOTSTRAP */
+
+
+/* All my style */
+
+.dd-center-contents {
+  display:flex;
+  align-items: center;
+  justify-content: center;
+}
+body.dd-center-contents {
+  position:absolute;
+  top:0;
+  bottom:0;
+  left:0;
+  right:0;
+}
+body {
+  padding-left:0;
+  padding-right:0;
+  padding-top:0;
+  padding-bottom:1em;
+  margin:0;
+}
+.dd-category-container {
+  min-height:40vh;
+  background-color:#E8E8E8;
+  /* transition: all 1s ease-in-out; */
+  padding:1em;
+  padding-bottom:2em;
+}
+.dd-category-spacer {
+  min-height:10vh;
+}
+.dd-console-navbar {
+  padding:1em;
+}
+.renamable {
+  cursor:pointer;
+}
+.renamable:hover {
+  text-decoration:underline;
+}
+
+.footer {
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  padding:1em;
+}

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+  <link rel="stylesheet" href="assets/stylesheet.css">
+  <title>Log In — Dublin Distance Console</title>
+</head>
+
+<body class="dd-center-contents container">
+  <div class="container">
+    <div class="row dd-center-contents">
+      <div class="col-xs-12 col-sm-8 col-md-8">
+        <div class="alert alert-danger" id="dd-login-errorMessage" role="alert"></div>
+        <div class="form-group">
+          <label for="dd-login-email">Email</label>
+          <input type="email" id="dd-login-email" class="form-control">
+        </div>
+        <div class="form-group">
+          <label for="dd-login-email">Password</label>
+          <input type="password" id="dd-login-password" class="form-control">
+        </div>
+        <button id="dd-login-submit" class="btn btn-success">Log In</button>
+      </div>
+    </div>
+  </div>
+</body>
+
+<script src="https://www.gstatic.com/firebasejs/7.12.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.12.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.12.0/firebase-firestore.js"></script>
+<script>
+  // Your web app's Firebase configuration
+  var firebaseConfig = {
+    apiKey: "AIzaSyAtwxvMA4vCnN6uJiHy_o2nwVpFG_TNHhA",
+    authDomain: "dublin-distance.firebaseapp.com",
+    databaseURL: "https://dublin-distance.firebaseio.com",
+    projectId: "dublin-distance",
+    storageBucket: "dublin-distance.appspot.com",
+    messagingSenderId: "721307459439",
+    appId: "1:721307459439:web:81849ece9df472f234d29a",
+    measurementId: "G-5VV382J1CR"
+  };
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+</script>
+<script src="assets/login.js"></script>
+
+</html>

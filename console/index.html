@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+  <link rel="stylesheet" href="../assets/stylesheet.css">
+  <title>Console — Dublin Distance Console</title>
+</head>
+
+<body>
+  <nav class="navbar dd-console-navbar navbar-light">
+    <button class="btn btn-warning" id="console-logOutButton">Log Out</button>
+  </nav>
+  <div class="container container-fluid" id="console-prelimContainer">
+    <div class="row">
+      <div class="col-sm-12 col-lg-5 dd-category-container dd-center-contents" id="console-circuitsContainer">
+        <button class="btn btn-primary" id="console-focusCircuitsButton">Circuits</button>
+      </div>
+      <div class="col-sm-1 col-lg-2 dd-category-spacer" id="console-categorySpacer"></div>
+      <div class="col-sm-12 col-lg-5 dd-category-container dd-center-contents" id="console-categoriesContainer">
+        <button class="btn btn-primary" id="console-focusCategoriesButton">Categories</button>
+      </div>
+    </div>
+  </div>
+  <div class="container container-fluid d-none dd-category-container" id="console-circuitsConsole">
+    <br>
+    <div class="container">
+      <h1>Circuits <button id="console-circuitsConsole-closeButton" class="btn btn-primary">Close</button></h1>
+      <ul class="list-group" id="console-circuitsConsole-circuitsList"></ul>
+    </div>
+  </div>
+  <div class="container container-fluid d-none dd-category-container" id="console-categoriesConsole">
+    <br>
+    <div class="container">
+      <h1>Categories <button id="console-categoriesConsole-closeButton" class="btn btn-primary">Close</button></h1>
+      <ul class="list-group" id="console-categoriesConsole-categoriesList"></ul>
+    </div>
+  </div>
+  <div class="d-none" id="console-templates">
+    <div id="console-template-circuitName">
+      <li class="list-group-item" data-circuitkey="%key%">
+        <div class="row">
+          <div class="col-lg-5 col-sm-12">
+            <h3 class="renamable console-circuit-rename" data-circuitkey="%key%">%name%</h3>
+          </div>
+          <div class="col-lg-3 col-sm-12 form-group">
+            <label>Category</label>
+            <select class="form-control console-circuit-categorySelect" data-circuitkey="%key%">%options%</select></div>
+          <div class="col-lg-4 col-sm-12 form-group">
+            <label class="">Controls</label>
+            <div class="input-group">
+              <button class="btn btn-primary form-control console-circuit-editButton" type="button" data-circuitkey="%key%">Edit</button>
+              <div class="input-group-append">
+                <button class="btn btn-danger console-circuit-deleteButton" type="button" data-circuitkey="%key%">Delete</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <ul class="list-group d-none console-circuit-edit-list" data-circuitkey="%key%">
+        </ul>
+      </li>
+    </div>
+    <div id="console-template-circuitEditRow">
+      <li class="list-group-item console-circuit-instruction-row" data-circuitkey="%key%" data-instructionindex="%instructionIndex%">
+        <div class="row">
+          <div class="col-lg-3 col-sm-12 form-group">
+            <label>Type</label>
+            <select class="form-control console-circuit-instruction-instructionType" data-circuitkey="%key%" data-instructionindex="%instructionIndex%">
+              <option value="comment">Comment</option>
+              <option value="displayName">Display Name</option>
+              <option value="repExercise">Rep Exercises</option>
+              <option value="timedExercise">Timed Exercise</option>
+              <option selected value="interruption">Interruption</option>
+            </select>
+          </div>
+          <div class="col-lg-6 col-sm-12 console-circuit-instructionEditor" data-circuitkey="%key%" data-instructionindex="%instructionIndex%"></div>
+          <div class="col-lg-3 col-sm-12">
+            <label class="d-none-sm">Controls</label>
+            <div class="input-group">
+              <button class="btn btn-small btn-outline-primary form-control console-circuit-instruction-addButton" type="button" data-circuitkey="%key%" data-instructionindex="%instructionIndex%">Add ↓</button>
+              <div class="input-group-append">
+                <button class="btn btn-small btn-outline-danger console-circuit-instruction-deleteButton" type="button" data-circuitkey="%key%" data-instructionindex="%instructionIndex%">Delete</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </li>
+    </div>
+    <div id="console-template-commentInstructionRow">
+      <div class="form-group console-circuit-instruction-controls instruction-comment">
+        <label>Content</label><input type="text" class="form-control console-circuit-instruction-control-data" value="%data%" placeholder="Comment Text">
+      </div>
+    </div>
+    <div id="console-template-displayNameInstructionRow">
+      <div class="form-group console-circuit-instruction-controls instruction-displayName">
+        <label>Content</label><input type="text" class="form-control console-circuit-instruction-control-data" value="%data%" placeholder="Circuit Name">
+      </div>
+    </div>
+    <div id="console-template-interruptionInstructionRow">
+
+    </div>
+    <div id="console-template-repExerciseInstructionRow">
+      <div class="row console-circuit-instruction-controls instruction-repExercise">
+        <div class="col-lg-6 form-group"><label>Title</label><input type="text" class="form-control console-circuit-instruction-control-name" value="%exerciseName%" placeholder="Exercise Name"></div>
+        <div class="col-lg-6 form-group"><label>Reps</label><input type="text" class="form-control console-circuit-instruction-control-reps" value="%exerciseReps%" placeholder="Exercise Reps"></div>
+      </div>
+    </div>
+    <div id="console-template-timedExerciseInstructionRow">
+      <div class="row console-circuit-instruction-controls instruction-repExercise">
+        <div class="col-lg-6 form-group"><label>Title</label><input type="text" class="form-control console-circuit-instruction-control-name" value="%exerciseName%" placeholder="Exercise Name"></div>
+        <div class="col-lg-6 form-group"><label>Length</label>
+          <div class="input-group">
+            <input type="number" class="form-control console-circuit-instruction-control-length" value="%exerciseLength%" min="1" placeholder="Exercise Length">
+            <div class="input-group-append">
+              <span class="input-group-text">sec</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="console-template-newCircuitRow">
+      <li class="list-group-item list-group-item-success console-circuits-newCircuitRow">
+        <div class="row">
+          <div class="col-lg-5 col-sm-12">
+            <h3>Create a New Circuit</h3>
+          </div>
+          <div class="col-lg-3 col-sm-12 form-group">
+            <label>Category</label>
+            <select class="form-control console-circuits-newCircuitRow-category">
+            </select>
+          </div>
+          <div class="col-lg-4 col-sm-12 form-group">
+            <label>&nbsp;</label>
+            <button class="btn btn-outline-success form-control console-circuits-newCircuitRow-createButton">Create</button>
+          </div>
+        </div>
+      </li>
+    </div>
+    <div id="console-template-categoryEditRow">
+      <li class="list-group-item console-category-edit-row" data-categoryref="%categoryKey%">
+        <div class="row">
+          <div class="col-lg-7 col-sm-12">
+            <h3><span class="renamable console-category-rename" data-categoryref="%categoryKey%">%name%</span> (<span class="text-secondary">%count% circuits</span>)</h3>
+          </div>
+          <div class="col-lg-5 col-sm-12 form-group %displayProperty%">
+            <div class="input-group">
+              <button class="console-category-insertCategoryBelow btn btn-outline-primary form-control">New Category ↓</button>
+              <div class="input-group-append">
+                <button data-categoryref="%categoryKey%" class="btn btn-outline-danger console-category-deleteButton">Delete Category</button>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-5 col-sm-12 form-group %invertedDisplayProperty%">
+            <button class="console-category-insertCategoryBelow btn btn-outline-primary form-control">New Category ↓</button>
+          </div>
+        </div>
+    </div>
+  </div>
+  </li>
+  </div>
+  </div>
+  
+</body>
+<script src="https://www.gstatic.com/firebasejs/7.12.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.12.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.12.0/firebase-firestore.js"></script>
+<script>
+  // Your web app's Firebase configuration
+  var firebaseConfig = {
+    apiKey: "AIzaSyAtwxvMA4vCnN6uJiHy_o2nwVpFG_TNHhA",
+    authDomain: "dublin-distance.firebaseapp.com",
+    databaseURL: "https://dublin-distance.firebaseio.com",
+    projectId: "dublin-distance",
+    storageBucket: "dublin-distance.appspot.com",
+    messagingSenderId: "721307459439",
+    appId: "1:721307459439:web:81849ece9df472f234d29a",
+    measurementId: "G-5VV382J1CR"
+  };
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+</script>
+<script src="../assets/console-circuits.js"></script>
+<script src="../assets/console.js"></script>
+
+</html>
