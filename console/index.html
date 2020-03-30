@@ -12,7 +12,9 @@
 
 <body>
   <nav class="navbar dd-console-navbar navbar-light">
-    <button class="btn btn-warning" id="console-logOutButton">Log Out</button>
+    <h2>
+      IHM Distance Console <button class="btn btn-warning btn-lg" id="console-logOutButton">Log Out</button>
+    </h2>
   </nav>
   <div class="container container-fluid" id="console-prelimContainer">
     <div class="row">
@@ -30,6 +32,8 @@
     <div class="container">
       <h1>Circuits <button id="console-circuitsConsole-closeButton" class="btn btn-primary">Close</button></h1>
       <ul class="list-group" id="console-circuitsConsole-circuitsList"></ul>
+      <div class="dd-100-spacer"></div>
+      <a class="btn btn-lg btn-danger" href="mailto:stassinopoulosari@gmail.com">I've screwed up royally and need to consult the programmer.</a>
     </div>
   </div>
   <div class="container container-fluid d-none dd-category-container" id="console-categoriesConsole">
@@ -37,6 +41,8 @@
     <div class="container">
       <h1>Categories <button id="console-categoriesConsole-closeButton" class="btn btn-primary">Close</button></h1>
       <ul class="list-group" id="console-categoriesConsole-categoriesList"></ul>
+      <div class="dd-100-spacer"></div>
+      <a class="btn btn-lg btn-danger" href="mailto:stassinopoulosari@gmail.com">I've screwed up royally and need to consult the programmer.</a>
     </div>
   </div>
   <div class="d-none" id="console-templates">
@@ -162,7 +168,7 @@
   </li>
   </div>
   </div>
-  
+
 </body>
 <script src="https://www.gstatic.com/firebasejs/7.12.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/7.12.0/firebase-auth.js"></script>
