@@ -12,7 +12,7 @@
     },
     invert = (object) => {
       var invertedObject = {};
-      for (key in object) {
+      for (var key in object) {
         invertedObject[object[key]] = key;
       }
       return invertedObject;
@@ -92,14 +92,12 @@
               break;
             default:
               throw "CircuitParseError: unrecognised command " + command;
-              return;
           }
 
           data.uuid = generateUUID();
           return data;
         } else {
           throw "CircuitParseError: unrecognised command " + command;
-          return;
         }
       },
       parseComment = function(arguments) {

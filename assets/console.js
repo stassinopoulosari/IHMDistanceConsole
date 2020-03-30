@@ -20,7 +20,7 @@
   })();
 
   (() => {
-    //BLOCK — Global Keydowns
+    //BLOCK — Global Keydowns & hook
 
     exports.keysCurrentlyPressed = {};
     document.onkeydown = (e) => {
@@ -29,6 +29,8 @@
     document.onkeyup = (e) => {
       exports.keysCurrentlyPressed[e.code] = false;
     };
+
+
   })();
 
   (() => {
@@ -211,7 +213,7 @@
               exports.keysCurrentlyPressed.ShiftRight ? false : !confirm("Are you sure you want to delete this category?"))) return;
           var dbRef = db.collection("categories").doc(key)
           dbRef.get().then((dbSnapshot) => {
-            var header = dbSnapshot.data().header;
+            // var header = dbSnapshot.data().header;
             dbRef.delete();
           });
           $row.parentNode.removeChild($row);
@@ -230,12 +232,13 @@
       },
       windDownCategoriesView = () => {
         $prelimContainer.style.display = "block";
+        document.getElementById("console-categoriesConsole-categoriesList").innerHTML = "";
         $console.setAttribute("class", $console.getAttribute("class").replace(/d-block/g, "d-none"));
       },
       $categoriesList = document.getElementById("console-categoriesConsole-categoriesList"),
       $console = document.getElementById("console-categoriesConsole"),
       $prelimContainer = document.getElementById("console-prelimContainer"),
-      $prelimCategoriesContainer = document.getElementById("console-categoriesContainer"),
+      // $prelimCategoriesContainer = document.getElementById("console-categoriesContainer"),
       $focusCategoriesButton = document.getElementById("console-focusCategoriesButton"),
       $unfocusCategoriesButton = document.getElementById("console-categoriesConsole-closeButton"),
       categoryEditRowTemplate = document.getElementById("console-template-categoryEditRow").innerHTML;
@@ -299,18 +302,19 @@
                 $createCircuitButton.onclick = () => {
                   // console.log($createCircuitButton);
                   var category = $createCircuitSelectorNC.value,
+                    newCircuitID = "zzC-" + new Date().getTime(),
                     d = new Date(),
+                    dateCode = (d.getYear() + 1900) + "." + ((d.getMonth() + 1) + ".").padStart(3, "0") + (d.getDate() + "").padStart(2, "0"),
                     newCircuit = {
                       category: category,
-                      title: "New Circuit",
-                      instructions: "#|New Circuit, " +
-                        (d.getYear() + 1900) + "." + ((d.getMonth() + 1) + ".").padStart(3, "0") + ((d.getDate() + "")).padStart(2, "0") +
-                        ";disp|New Circuit;tex|Exercise Title|0|60;tex|Break|0|60;"
+                      title: "New Circuit " + dateCode,
+                      instructions: "disp|New Circuit " +
+                        dateCode + ";tex|Exercise Title|0|60;tex|Break|0|60;"
                     };
 
-                  db.collection("circuits").add(newCircuit).then((newCircuitRef) => {
+                  db.collection("circuits").doc(newCircuitID).set(newCircuit).then(() => {
                       var name = newCircuit.title,
-                        circuitKey = newCircuitRef.id,
+                        circuitKey = newCircuitID,
                         parsedCircuit = consoleCircuits.parseCircuit(newCircuit.instructions),
                         instructions = parsedCircuit.instructions,
                         $createCircuitRow = $createCircuitButton.parentNode.parentNode.parentNode;
@@ -548,8 +552,8 @@
             };
             break;
           case "repExercise":
-            var $controls = [".console-circuit-instruction-control-name", ".console-circuit-instruction-control-reps"].map((el) => $instructionControls.querySelector(el));
-            $controls.forEach(($control, i) => {
+            var $controlsR = [".console-circuit-instruction-control-name", ".console-circuit-instruction-control-reps"].map((el) => $instructionControls.querySelector(el));
+            $controlsR.forEach(($control, i) => {
               $control.oninput = () => {
                 var indices = findIndices();
                 exports.workingCopies
@@ -561,8 +565,8 @@
             });
             break;
           case "timedExercise":
-            var $controls = ["console-circuit-instruction-control-name", "console-circuit-instruction-control-length"].map((el) => $instructionControls.getElementsByClassName(el)[0]);
-            $controls.forEach(($control, i) => {
+            var $controlsT = ["console-circuit-instruction-control-name", "console-circuit-instruction-control-length"].map((el) => $instructionControls.getElementsByClassName(el)[0]);
+            $controlsT.forEach(($control, i) => {
               $control.oninput = () => {
                 var indices = findIndices();
                 exports.workingCopies
@@ -602,10 +606,11 @@
         $prelimContainer.style.display = "block";
         $console.setAttribute("class", [].slice.call($console.classList).join(" ").replace("d-block", "d-none"));
         $focusCircuitsButton.disabled = false;
+        document.getElementById("console-circuitsConsole-circuitsList").innerHTML = "";
       },
       $focusCircuitsButton = document.getElementById("console-focusCircuitsButton"),
       $closeCircuitsButton = document.getElementById("console-circuitsConsole-closeButton"),
-      $circuitsContainer = document.getElementById("console-circuitsContainer"),
+      // $circuitsContainer = document.getElementById("console-circuitsContainer"),
       $console = document.getElementById("console-circuitsConsole"),
       $prelimContainer = document.getElementById("console-prelimContainer"),
       circuitNameTemplate = document.getElementById("console-template-circuitName").innerHTML,
@@ -613,7 +618,7 @@
       tokenTemplates = (() => {
         var tokens = []
         var commandTokens = consoleCircuits.commandTokens;
-        for (tokenName in commandTokens) {
+        for (var tokenName in commandTokens) {
           tokens.push(tokenName);
         }
         var templates = {};
@@ -621,15 +626,18 @@
           templates[token] = document.getElementById("console-template-" + token + "InstructionRow").innerHTML;
         });
         return templates;
-      })(),
-      $otherContainers = ["console-categoriesContainer", "console-categorySpacer"].map((el) => {
-        return document.getElementById(el);
-      });
+      })();
+    // ,
+    // $otherContainers = ["console-categoriesContainer", "console-categorySpacer"].map((el) => {
+    //   return document.getElementById(el);
+    // });
 
     $focusCircuitsButton.onclick = activateCircuitView;
+
     $closeCircuitsButton.onclick = deactivateCircuitView;
 
     exports.buildControlsForInstruction = buildControlsForInstruction;
+
     exports.linkControlsForInstruction = linkControlsForInstruction;
 
   })();
@@ -684,7 +692,7 @@
               return instruction[1].uuid == uuid;
             })[0][0];
           })();
-        if(instructions.length == 1) {
+        if (instructions.length == 1) {
           alert("Cannot delete the last exercise, sorry!");
           return;
         }
