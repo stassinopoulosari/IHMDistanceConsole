@@ -28,10 +28,10 @@
 
     common.keysCurrentlyPressed = {};
     document.onkeydown = (e) => {
-      common.keysCurrentlyPressed[e.code] = true;
+      common.keysCurrentlyPressed[e.key.toLowerCase()] = true;
     };
     document.onkeyup = (e) => {
-      common.keysCurrentlyPressed[e.code] = false;
+      common.keysCurrentlyPressed[e.key.toLowerCase()] = false;
     };
 
   })();
@@ -212,8 +212,7 @@
           });
         };
         $deleteButton.onclick = () => {
-          if ((common.keysCurrentlyPressed.ShiftLeft ||
-              common.keysCurrentlyPressed.ShiftRight ? false : !confirm("Are you sure you want to delete this category?"))) return;
+          if ((common.keysCurrentlyPressed.shift ? false : !confirm("Are you sure you want to delete this category?"))) return;
           var dbRef = db.collection("categories").doc(key)
           dbRef.get().then((dbSnapshot) => {
             // var header = dbSnapshot.data().header;
@@ -419,8 +418,7 @@
           .forEach(($deleteButton) => {
             var key = $deleteButton.getAttribute("data-circuitkey");
             $deleteButton.onclick = () => {
-              if ((common.keysCurrentlyPressed.ShiftLeft ||
-                  common.keysCurrentlyPressed.ShiftRight ? false : !confirm("Are you sure you want to delete this circuit?"))) return;
+              if ((common.keysCurrentlyPressed.shift ? false : !confirm("Are you sure you want to delete this circuit?"))) return;
               db.collection("circuits").doc(key).update({
                 category: "deleted"
               }).then(() => {

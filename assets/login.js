@@ -9,13 +9,21 @@
 
   $errorMessage.style.display = "none";
 
-  $submitButton.onclick = () => {
+
+
+  var tryLogin = $submitButton.onclick = () => {
+
+    $errorMessage.style.display = "none";
+
+    $submitButton.disabled = true;
+
     var email = $email.value,
       password = $password.value,
       loginError = null;
     auth.signInWithEmailAndPassword(email, password)
       .catch((error) => {
         loginError = error;
+        $submitButton.disabled = false;
         var errorMessage = (loginError.message || "The login failed");
         $errorMessage.innerText = errorMessage;
         $errorMessage.style.display = "block";
@@ -25,5 +33,10 @@
         location.assign("./console");
       });
 
-  }
+  };
+
+  $email.onkeydown = $password.onkeydown = (e) => {
+    if(e.key == "Enter") tryLogin() && e.preventDefault();
+  };
+
 })();
