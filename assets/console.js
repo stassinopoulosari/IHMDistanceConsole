@@ -2,18 +2,18 @@
 
   //Globals
   var db = firebase.firestore();
-  var exports = {
+  var common = {
     workingCopies: {}
   };
 
   (() => {
     //BLOCK — Sanitize
 
-    exports.sanitize = (text) => {
+    common.sanitize = (text) => {
       var el = document.createElement("div");
       el.innerText = text;
       var sanitized = el.innerHTML;
-      delete el;
+      // delete el;
       return sanitized;
     };
 
@@ -22,12 +22,12 @@
   (() => {
     //BLOCK — Global Keydowns & hook
 
-    exports.keysCurrentlyPressed = {};
+    common.keysCurrentlyPressed = {};
     document.onkeydown = (e) => {
-      exports.keysCurrentlyPressed[e.code] = true;
+      common.keysCurrentlyPressed[e.code] = true;
     };
     document.onkeyup = (e) => {
-      exports.keysCurrentlyPressed[e.code] = false;
+      common.keysCurrentlyPressed[e.code] = false;
     };
 
 
@@ -68,7 +68,7 @@
                 data: document.data()
               };
             });
-          exports.workingCopies.categories = categories;
+          common.workingCopies.categories = categories;
           resolve(categories);
         }).catch((categoriesError) => {
           reject(categoriesError);
@@ -76,7 +76,7 @@
       });
     };
 
-    exports.loadCategories = loadCategories;
+    common.loadCategories = loadCategories;
 
   })();
 
@@ -112,7 +112,7 @@
               }
               return 1;
             });
-          exports.workingCopies.circuits = circuits;
+          common.workingCopies.circuits = circuits;
           resolve(circuits);
         }).catch((circuitsError) => {
           reject(circuitsError);
@@ -120,7 +120,7 @@
       });
     };
 
-    exports.loadCircuits = loadCircuits;
+    common.loadCircuits = loadCircuits;
 
   })();
 
@@ -128,8 +128,8 @@
     //BLOCK — categories
     var beginCategoriesView = () => {
         return new Promise((resolve, reject) => {
-          exports.loadCircuits().then((circuits) => {
-            exports.loadCategories().then((categories) => {
+          common.loadCircuits().then((circuits) => {
+            common.loadCategories().then((categories) => {
               $categoriesList.innerHTML = "";
               categories.map((category) => {
                   var categoryCode = category.data.category,
@@ -155,9 +155,9 @@
       },
       generateCategoryEditRow = (category) => {
         return categoryEditRowTemplate
-          .replace(/%categoryKey%/g, exports.sanitize(category.key))
-          .replace(/%name%/g, exports.sanitize(category.data.header))
-          .replace(/%count%/g, exports.sanitize(category.count))
+          .replace(/%categoryKey%/g, common.sanitize(category.key))
+          .replace(/%name%/g, common.sanitize(category.data.header))
+          .replace(/%count%/g, common.sanitize(category.count))
           .replace(/%invertedDisplayProperty%/g, category.count <= 0 ? "d-none" : "")
           .replace(/%displayProperty%/g, category.count > 0 ? "d-none" : "");
       },
@@ -209,8 +209,8 @@
           });
         };
         $deleteButton.onclick = () => {
-          if ((exports.keysCurrentlyPressed.ShiftLeft ||
-              exports.keysCurrentlyPressed.ShiftRight ? false : !confirm("Are you sure you want to delete this category?"))) return;
+          if ((common.keysCurrentlyPressed.ShiftLeft ||
+              common.keysCurrentlyPressed.ShiftRight ? false : !confirm("Are you sure you want to delete this category?"))) return;
           var dbRef = db.collection("categories").doc(key)
           dbRef.get().then((dbSnapshot) => {
             // var header = dbSnapshot.data().header;
@@ -265,8 +265,8 @@
           var $circuitsList = document.getElementById("console-circuitsConsole-circuitsList");
           $circuitsList.innerHTML = document.getElementById("console-template-newCircuitRow").innerHTML;
 
-          exports.loadCategories().then((categories) => {
-            exports.loadCircuits().then((circuits) => {
+          common.loadCategories().then((categories) => {
+            common.loadCircuits().then((circuits) => {
               var categoryOptions = (() => {
                 return categories.sort((a, b) => {
                   if (!a.data.header) {
@@ -284,9 +284,9 @@
                   return 0;
                 }).filter((category) => category.data.formerHeader || category.data.header).map((category, i) => {
                   return "<option " + (!category.data.header ? "disabled" : "") + " value='" +
-                    exports.sanitize(category.data.category) +
+                    common.sanitize(category.data.category) +
                     "'>" +
-                    exports.sanitize(category.data.header ? category.data.header : "[deleted category, formerly " +
+                    common.sanitize(category.data.header ? category.data.header : "[deleted category, formerly " +
                       category.data.formerHeader + "]") +
                     "</option>";
                 }).join("");
@@ -296,83 +296,7 @@
               $createCircuitSelector.innerHTML = categoryOptions;
 
 
-              setTimeout(() => {
-                var $createCircuitButton = $circuitsList.querySelector(".console-circuits-newCircuitRow-createButton");
-                var $createCircuitSelectorNC = $circuitsList.querySelector(".console-circuits-newCircuitRow-category");;
-                $createCircuitButton.onclick = () => {
-                  // console.log($createCircuitButton);
-                  var category = $createCircuitSelectorNC.value,
-                    newCircuitID = "zzC-" + new Date().getTime(),
-                    d = new Date(),
-                    dateCode = (d.getYear() + 1900) + "." + ((d.getMonth() + 1) + ".").padStart(3, "0") + (d.getDate() + "").padStart(2, "0"),
-                    newCircuit = {
-                      category: category,
-                      title: "New Circuit " + dateCode,
-                      instructions: "disp|New Circuit " +
-                        dateCode + ";tex|Exercise Title|0|60;tex|Break|0|60;"
-                    };
-
-                  db.collection("circuits").doc(newCircuitID).set(newCircuit).then(() => {
-                      var name = newCircuit.title,
-                        circuitKey = newCircuitID,
-                        parsedCircuit = consoleCircuits.parseCircuit(newCircuit.instructions),
-                        instructions = parsedCircuit.instructions,
-                        $createCircuitRow = $createCircuitButton.parentNode.parentNode.parentNode;
-                      exports.workingCopies.circuits.push({
-                        storedDocument: newCircuit,
-                        parsedCircuit: parsedCircuit,
-                        circuitID: circuitKey
-                      });
-                      $createCircuitRow.insertAdjacentHTML("afterend", circuitNameTemplate
-                        .replace(/%key%/g, exports.sanitize(circuitKey))
-                        .replace(/%name%/g, exports.sanitize(name))
-                        .replace(/%options%/g, categoryOptions));
-                      var $circuitEditList = [].slice
-                        .call(document.getElementsByClassName("console-circuit-edit-list"))
-                        .filter(($list) => {
-                          return $list.getAttribute("data-circuitKey") == circuitKey;
-                        })[0];
-
-                      instructions.forEach((instruction) => {
-                        var instructionUUID = instruction.uuid;
-                        $circuitEditList.innerHTML += circuitEditRowTemplate
-                          .replace(/%instructionType%/g, exports.sanitize(instruction.type))
-                          .replace(/%key%/g, exports.sanitize(circuitKey))
-                          .replace(/%instructionIndex%/g, exports.sanitize(instruction.uuid));
-                        setTimeout(() => {
-                          var $selector = document.querySelector(".console-circuit-instruction-instructionType[data-circuitkey='" + exports.sanitize(circuitKey) + "'][data-instructionindex='" + exports.sanitize(instructionUUID) + "']");
-                          $selector.value = instruction.type;
-                          $selector.onchange = () => {
-                            exports.dataUtilities.handleExerciseTypeChange(circuitKey, instructionUUID, $selector.value);
-                          }
-
-                          var $controlsContainer = document.querySelector(".console-circuit-instructionEditor[data-circuitkey='" + exports.sanitize(circuitKey) + "'][data-instructionindex='" + exports.sanitize(instructionUUID) + "']");
-                          $controlsContainer.innerHTML = buildControlsForInstruction(instruction);
-                          setTimeout(() => {
-                            exports.linkControlsForInstruction($controlsContainer, instruction, circuitKey);
-                          }, 1);
-
-                          var $addButton = document.querySelector(".console-circuit-instruction-addButton[data-circuitkey='" + exports.sanitize(circuitKey) + "'][data-instructionindex='" + exports.sanitize(instructionUUID) + "']");
-                          $addButton.onclick = () => {
-                            exports.dataUtilities.insertExercise(circuitKey, instructionUUID);
-                          };
-
-                          var $deleteButton = document.querySelector(".console-circuit-instruction-deleteButton[data-circuitkey='" + exports.sanitize(circuitKey) + "'][data-instructionindex='" + exports.sanitize(instructionUUID) + "']");
-                          $deleteButton.onclick = () => {
-                            exports.dataUtilities.deleteExercise(circuitKey, instructionUUID, $deleteButton.parentNode.parentNode.parentNode.parentNode.parentNode);
-                          };
-
-                          setTimeout(() => {
-                            document.querySelector(".console-circuit-categorySelect[data-circuitKey='" + circuitKey + "']").value = newCircuit.category;
-                          }, 1);
-
-                          setTimeout(() => resolveAllCircuitRows(), 1);
-                        }, 1);
-                      });
-                    })
-                    .catch((x) => console.error(x));
-                };
-              }, 1);
+              linkControlsAndNewCircuit($circuitsList, categoryOptions);
 
               // console.log($createCircuitButton);
               // console.log($createCircuitButton.onclick);
@@ -393,6 +317,85 @@
           }).catch((x) => reject(x));
         });
       },
+      linkControlsAndNewCircuit = ($circuitsList, categoryOptions) => {
+        setTimeout(() => {
+          var $createCircuitButton = $circuitsList.querySelector(".console-circuits-newCircuitRow-createButton");
+          var $createCircuitSelectorNC = $circuitsList.querySelector(".console-circuits-newCircuitRow-category");;
+          $createCircuitButton.onclick = () => {
+            // console.log($createCircuitButton);
+            var category = $createCircuitSelectorNC.value,
+              newCircuitID = "zzC-" + new Date().getTime(),
+              d = new Date(),
+              dateCode = (d.getYear() + 1900) + "." + ((d.getMonth() + 1) + ".").padStart(3, "0") + (d.getDate() + "").padStart(2, "0"),
+              newCircuit = {
+                category: category,
+                title: "New Circuit " + dateCode,
+                instructions: "disp|New Circuit " +
+                  dateCode + ";tex|Exercise Title|0|60;tex|Break|0|60;"
+              };
+
+            db.collection("circuits").doc(newCircuitID).set(newCircuit).then(() => {
+                var name = newCircuit.title,
+                  circuitKey = newCircuitID,
+                  parsedCircuit = consoleCircuits.parseCircuit(newCircuit.instructions),
+                  instructions = parsedCircuit.instructions,
+                  $createCircuitRow = $createCircuitButton.parentNode.parentNode.parentNode;
+                common.workingCopies.circuits.push({
+                  storedDocument: newCircuit,
+                  parsedCircuit: parsedCircuit,
+                  circuitID: circuitKey
+                });
+                $createCircuitRow.insertAdjacentHTML("afterend", circuitNameTemplate
+                  .replace(/%key%/g, common.sanitize(circuitKey))
+                  .replace(/%name%/g, common.sanitize(name))
+                  .replace(/%options%/g, categoryOptions));
+                var $circuitEditList = [].slice
+                  .call(document.getElementsByClassName("console-circuit-edit-list"))
+                  .filter(($list) => {
+                    return $list.getAttribute("data-circuitKey") == circuitKey;
+                  })[0];
+
+                instructions.forEach((instruction) => {
+                  var instructionUUID = instruction.uuid;
+                  $circuitEditList.innerHTML += circuitEditRowTemplate
+                    .replace(/%instructionType%/g, common.sanitize(instruction.type))
+                    .replace(/%key%/g, common.sanitize(circuitKey))
+                    .replace(/%instructionIndex%/g, common.sanitize(instruction.uuid));
+                  setTimeout(() => {
+                    var $selector = document.querySelector(".console-circuit-instruction-instructionType[data-circuitkey='" + common.sanitize(circuitKey) + "'][data-instructionindex='" + common.sanitize(instructionUUID) + "']");
+                    $selector.value = instruction.type;
+                    $selector.onchange = () => {
+                      common.dataUtilities.handleExerciseTypeChange(circuitKey, instructionUUID, $selector.value);
+                    }
+
+                    var $controlsContainer = document.querySelector(".console-circuit-instructionEditor[data-circuitkey='" + common.sanitize(circuitKey) + "'][data-instructionindex='" + common.sanitize(instructionUUID) + "']");
+                    $controlsContainer.innerHTML = buildControlsForInstruction(instruction);
+                    setTimeout(() => {
+                      common.linkControlsForInstruction($controlsContainer, instruction, circuitKey);
+                    }, 1);
+
+                    var $addButton = document.querySelector(".console-circuit-instruction-addButton[data-circuitkey='" + common.sanitize(circuitKey) + "'][data-instructionindex='" + common.sanitize(instructionUUID) + "']");
+                    $addButton.onclick = () => {
+                      common.dataUtilities.insertExercise(circuitKey, instructionUUID);
+                    };
+
+                    var $deleteButton = document.querySelector(".console-circuit-instruction-deleteButton[data-circuitkey='" + common.sanitize(circuitKey) + "'][data-instructionindex='" + common.sanitize(instructionUUID) + "']");
+                    $deleteButton.onclick = () => {
+                      common.dataUtilities.deleteExercise(circuitKey, instructionUUID, $deleteButton.parentNode.parentNode.parentNode.parentNode.parentNode);
+                    };
+
+                    setTimeout(() => {
+                      document.querySelector(".console-circuit-categorySelect[data-circuitKey='" + circuitKey + "']").value = newCircuit.category;
+                    }, 1);
+
+                    setTimeout(() => resolveAllCircuitRows(), 1);
+                  }, 1);
+                });
+              })
+              .catch((x) => console.error(x));
+          };
+        }, 1);
+      },
       resolveAllCircuitRows = () => {
         [].slice
           .call(document.getElementsByClassName("console-circuit-categorySelect"))
@@ -410,8 +413,8 @@
           .forEach(($deleteButton) => {
             var key = $deleteButton.getAttribute("data-circuitkey");
             $deleteButton.onclick = () => {
-              if ((exports.keysCurrentlyPressed.ShiftLeft ||
-                  exports.keysCurrentlyPressed.ShiftRight ? false : !confirm("Are you sure you want to delete this circuit?"))) return;
+              if ((common.keysCurrentlyPressed.ShiftLeft ||
+                  common.keysCurrentlyPressed.ShiftRight ? false : !confirm("Are you sure you want to delete this circuit?"))) return;
               db.collection("circuits").doc(key).update({
                 category: "deleted"
               }).then(() => {
@@ -442,7 +445,7 @@
               var textToRename = $renameElement.innerText = $renameElement.innerText.trim().replace(/\n|\r/g, "").substr(0, 50);
               if (textToRename == "") $renameElement.innerText = textToRename = "Circuit Name";
               db.collection("circuits").doc(key).update({
-                "header": textToRename
+                "title": textToRename
               });
             }
           });
@@ -460,9 +463,9 @@
                 $editButton.setAttribute("class", $editButton.getAttribute("class").replace(/btn-primary/g, "btn-success"))
                 $circuitEditList.setAttribute("class", classes.replace(/d-none/g, "d-block"));
               } else {
-                var workingCopy = (() => exports.workingCopies.circuits.map((circuit, i) => [i, circuit]).filter((circuit) => circuit[1].circuitID == key)[0][1])();
+                var workingCopy = (() => common.workingCopies.circuits.map((circuit, i) => [i, circuit]).filter((circuit) => circuit[1].circuitID == key)[0][1])();
                 $editButton.disabled = true;
-                exports.dataUtilities.writeCircuit(workingCopy).then(() => {
+                common.dataUtilities.writeCircuit(workingCopy).then(() => {
                   $editButton.innerText = "Edit";
                   $editButton.disabled = false;
                   $editButton.setAttribute("class", $editButton.getAttribute("class").replace(/btn-success/g, "btn-primary"))
@@ -478,8 +481,8 @@
           instructions = circuit.parsedCircuit.instructions;
 
         $circuitsList.innerHTML += circuitNameTemplate
-          .replace(/%key%/g, exports.sanitize(circuitKey))
-          .replace(/%name%/g, exports.sanitize(name))
+          .replace(/%key%/g, common.sanitize(circuitKey))
+          .replace(/%name%/g, common.sanitize(name))
           .replace(/%options%/g, categoryOptions);
 
         setTimeout(() => {
@@ -494,30 +497,30 @@
         instructions.forEach((instruction) => {
           var instructionUUID = instruction.uuid;
           $circuitEditList.innerHTML += circuitEditRowTemplate
-            .replace(/%instructionType%/g, exports.sanitize(instruction.type))
-            .replace(/%key%/g, exports.sanitize(circuitKey))
-            .replace(/%instructionIndex%/g, exports.sanitize(instruction.uuid));
+            .replace(/%instructionType%/g, common.sanitize(instruction.type))
+            .replace(/%key%/g, common.sanitize(circuitKey))
+            .replace(/%instructionIndex%/g, common.sanitize(instruction.uuid));
           setTimeout(() => {
-            var $selector = document.querySelector(".console-circuit-instruction-instructionType[data-circuitkey='" + exports.sanitize(circuitKey) + "'][data-instructionindex='" + exports.sanitize(instructionUUID) + "']");
+            var $selector = document.querySelector(".console-circuit-instruction-instructionType[data-circuitkey='" + common.sanitize(circuitKey) + "'][data-instructionindex='" + common.sanitize(instructionUUID) + "']");
             $selector.value = instruction.type;
             $selector.onchange = () => {
-              exports.dataUtilities.handleExerciseTypeChange(circuitKey, instructionUUID, $selector.value);
+              common.dataUtilities.handleExerciseTypeChange(circuitKey, instructionUUID, $selector.value);
             }
 
-            var $controlsContainer = document.querySelector(".console-circuit-instructionEditor[data-circuitkey='" + exports.sanitize(circuitKey) + "'][data-instructionindex='" + exports.sanitize(instructionUUID) + "']");
+            var $controlsContainer = document.querySelector(".console-circuit-instructionEditor[data-circuitkey='" + common.sanitize(circuitKey) + "'][data-instructionindex='" + common.sanitize(instructionUUID) + "']");
             $controlsContainer.innerHTML = buildControlsForInstruction(instruction);
             setTimeout(() => {
-              exports.linkControlsForInstruction($controlsContainer, instruction, circuitKey);
+              common.linkControlsForInstruction($controlsContainer, instruction, circuitKey);
             }, 1);
 
-            var $addButton = document.querySelector(".console-circuit-instruction-addButton[data-circuitkey='" + exports.sanitize(circuitKey) + "'][data-instructionindex='" + exports.sanitize(instructionUUID) + "']");
+            var $addButton = document.querySelector(".console-circuit-instruction-addButton[data-circuitkey='" + common.sanitize(circuitKey) + "'][data-instructionindex='" + common.sanitize(instructionUUID) + "']");
             $addButton.onclick = () => {
-              exports.dataUtilities.insertExercise(circuitKey, instructionUUID);
+              common.dataUtilities.insertExercise(circuitKey, instructionUUID);
             };
 
-            var $deleteButton = document.querySelector(".console-circuit-instruction-deleteButton[data-circuitkey='" + exports.sanitize(circuitKey) + "'][data-instructionindex='" + exports.sanitize(instructionUUID) + "']");
+            var $deleteButton = document.querySelector(".console-circuit-instruction-deleteButton[data-circuitkey='" + common.sanitize(circuitKey) + "'][data-instructionindex='" + common.sanitize(instructionUUID) + "']");
             $deleteButton.onclick = () => {
-              exports.dataUtilities.deleteExercise(circuitKey, instructionUUID, $deleteButton.parentNode.parentNode.parentNode.parentNode.parentNode);
+              common.dataUtilities.deleteExercise(circuitKey, instructionUUID, $deleteButton.parentNode.parentNode.parentNode.parentNode.parentNode);
             };
 
           }, 1);
@@ -527,7 +530,7 @@
         var instructionType = instruction.type,
           uuid = instruction.uuid,
           findIndices = () => {
-            var workingCopy = (() => exports.workingCopies.circuits.map((circuit, i) => [i, circuit]).filter((circuit) => circuit[1].circuitID == circuitKey)[0])(),
+            var workingCopy = (() => common.workingCopies.circuits.map((circuit, i) => [i, circuit]).filter((circuit) => circuit[1].circuitID == circuitKey)[0])(),
               instructions = workingCopy[1].parsedCircuit.instructions,
               arrayIndex = (() => instructions.map((instruction, i) => [i, instruction]).filter((instruction) => {
                 return instruction[1].uuid == uuid;
@@ -545,7 +548,7 @@
             var $control = $instructionControls.getElementsByClassName("console-circuit-instruction-control-data")[0];
             $control.oninput = () => {
               var indices = findIndices();
-              exports.workingCopies
+              common.workingCopies
                 .circuits[indices.workingCopyIndex]
                 .parsedCircuit
                 .instructions[indices.instructionIndex].data = $control.value;
@@ -556,7 +559,7 @@
             $controlsR.forEach(($control, i) => {
               $control.oninput = () => {
                 var indices = findIndices();
-                exports.workingCopies
+                common.workingCopies
                   .circuits[indices.workingCopyIndex]
                   .parsedCircuit
                   .instructions[indices.instructionIndex]
@@ -569,7 +572,7 @@
             $controlsT.forEach(($control, i) => {
               $control.oninput = () => {
                 var indices = findIndices();
-                exports.workingCopies
+                common.workingCopies
                   .circuits[indices.workingCopyIndex]
                   .parsedCircuit
                   .instructions[indices.instructionIndex]
@@ -589,17 +592,17 @@
             break;
           case "comment":
           case "displayName":
-            return template.replace(/%data%/g, exports.sanitize(instruction.data));
+            return template.replace(/%data%/g, common.sanitize(instruction.data));
             break;
           case "repExercise":
             return template
-              .replace(/%exerciseName%/g, exports.sanitize(instruction.data.exerciseName))
-              .replace(/%exerciseReps%/g, exports.sanitize(instruction.data.reps));
+              .replace(/%exerciseName%/g, common.sanitize(instruction.data.exerciseName))
+              .replace(/%exerciseReps%/g, common.sanitize(instruction.data.reps));
             break;
           case "timedExercise":
             return template
-              .replace(/%exerciseName%/g, exports.sanitize(instruction.data.exerciseName))
-              .replace(/%exerciseLength%/g, exports.sanitize(instruction.data.length));
+              .replace(/%exerciseName%/g, common.sanitize(instruction.data.exerciseName))
+              .replace(/%exerciseLength%/g, common.sanitize(instruction.data.length));
         }
       },
       deactivateCircuitView = () => {
@@ -636,17 +639,17 @@
 
     $closeCircuitsButton.onclick = deactivateCircuitView;
 
-    exports.buildControlsForInstruction = buildControlsForInstruction;
+    common.buildControlsForInstruction = buildControlsForInstruction;
 
-    exports.linkControlsForInstruction = linkControlsForInstruction;
+    common.linkControlsForInstruction = linkControlsForInstruction;
 
   })();
 
   (() => {
     //BLOCK — Data Utilities
-    exports.dataUtilities = {
+    common.dataUtilities = {
       insertExercise: (circuitKey, uuidBefore) => {
-        var workingCopy = (() => exports.workingCopies.circuits.map((circuit, i) => [i, circuit]).filter((circuit) => circuit[1].circuitID == circuitKey)[0])(),
+        var workingCopy = (() => common.workingCopies.circuits.map((circuit, i) => [i, circuit]).filter((circuit) => circuit[1].circuitID == circuitKey)[0])(),
           instructions = workingCopy[1].parsedCircuit.instructions,
           $elementAfter = document.querySelector(".console-circuit-instruction-row[data-circuitkey='" + circuitKey + "'][data-instructionindex='" + uuidBefore + "']"),
           newUUID = consoleCircuits.generateUUID(),
@@ -654,8 +657,8 @@
           .getElementById("console-template-circuitEditRow")
           .innerHTML
           .replace(/%instructionType%/g, "interruption")
-          .replace(/%key%/g, exports.sanitize(circuitKey))
-          .replace(/%instructionIndex%/g, exports.sanitize(newUUID));
+          .replace(/%key%/g, common.sanitize(circuitKey))
+          .replace(/%instructionIndex%/g, common.sanitize(newUUID));
         var arrayBeforeIndex = (() => {
           return instructions.map((instruction, i) => [i, instruction]).filter((instruction) => {
             return instruction[1].uuid == uuidBefore;
@@ -665,27 +668,27 @@
           type: "interruption",
           uuid: newUUID
         });
-        exports.workingCopies.circuits[workingCopy[0]].parsedCircuit.instructions = instructions;
+        common.workingCopies.circuits[workingCopy[0]].parsedCircuit.instructions = instructions;
         $elementAfter.insertAdjacentHTML("afterend", toInsert);
         setTimeout(() => {
-          var $selector = document.querySelector(".console-circuit-instruction-instructionType[data-circuitkey='" + exports.sanitize(circuitKey) + "'][data-instructionindex='" + exports.sanitize(newUUID) + "']");
+          var $selector = document.querySelector(".console-circuit-instruction-instructionType[data-circuitkey='" + common.sanitize(circuitKey) + "'][data-instructionindex='" + common.sanitize(newUUID) + "']");
           $selector.value = "interruption";
           $selector.onchange = () => {
-            exports.dataUtilities.handleExerciseTypeChange(circuitKey, newUUID, $selector.value);
+            common.dataUtilities.handleExerciseTypeChange(circuitKey, newUUID, $selector.value);
           }
-          var $addButton = document.querySelector(".console-circuit-instruction-addButton[data-circuitkey='" + exports.sanitize(circuitKey) + "'][data-instructionindex='" + exports.sanitize(newUUID) + "']");
+          var $addButton = document.querySelector(".console-circuit-instruction-addButton[data-circuitkey='" + common.sanitize(circuitKey) + "'][data-instructionindex='" + common.sanitize(newUUID) + "']");
           $addButton.onclick = () => {
-            exports.dataUtilities.insertExercise(circuitKey, newUUID);
+            common.dataUtilities.insertExercise(circuitKey, newUUID);
           };
 
-          var $deleteButton = document.querySelector(".console-circuit-instruction-deleteButton[data-circuitkey='" + exports.sanitize(circuitKey) + "'][data-instructionindex='" + exports.sanitize(newUUID) + "']");
+          var $deleteButton = document.querySelector(".console-circuit-instruction-deleteButton[data-circuitkey='" + common.sanitize(circuitKey) + "'][data-instructionindex='" + common.sanitize(newUUID) + "']");
           $deleteButton.onclick = () => {
-            exports.dataUtilities.deleteExercise(circuitKey, newUUID, $deleteButton.parentNode.parentNode.parentNode.parentNode.parentNode);
+            common.dataUtilities.deleteExercise(circuitKey, newUUID, $deleteButton.parentNode.parentNode.parentNode.parentNode.parentNode);
           };
         }, 1);
       },
       deleteExercise: (circuitKey, uuid, $instructionRow) => {
-        var workingCopy = (() => exports.workingCopies.circuits.map((circuit, i) => [i, circuit]).filter((circuit) => circuit[1].circuitID == circuitKey)[0])(),
+        var workingCopy = (() => common.workingCopies.circuits.map((circuit, i) => [i, circuit]).filter((circuit) => circuit[1].circuitID == circuitKey)[0])(),
           instructions = workingCopy[1].parsedCircuit.instructions,
           arrayIndex = (() => {
             return instructions.map((instruction, i) => [i, instruction]).filter((instruction) => {
@@ -700,7 +703,7 @@
         $instructionRow.parentNode.removeChild($instructionRow);
       },
       handleExerciseTypeChange: (circuitKey, uuid, newType) => {
-        var workingCopy = (() => exports.workingCopies.circuits.map((circuit, i) => [i, circuit]).filter((circuit) => circuit[1].circuitID == circuitKey)[0])(),
+        var workingCopy = (() => common.workingCopies.circuits.map((circuit, i) => [i, circuit]).filter((circuit) => circuit[1].circuitID == circuitKey)[0])(),
           instructions = workingCopy[1].parsedCircuit.instructions,
           arrayIndex = (() => {
             return instructions.map((instruction, i) => [i, instruction]).filter((instruction) => {
@@ -747,13 +750,13 @@
 
         var $circuitEditor = document.querySelector(".console-circuit-instructionEditor[data-circuitkey='" + circuitKey + "'][data-instructionindex='" + uuid + "']");
 
-        $circuitEditor.innerHTML = exports.buildControlsForInstruction(instructions[arrayIndex]);
+        $circuitEditor.innerHTML = common.buildControlsForInstruction(instructions[arrayIndex]);
 
         setTimeout(() => {
-          exports.linkControlsForInstruction($circuitEditor, instructions[arrayIndex], circuitKey);
+          common.linkControlsForInstruction($circuitEditor, instructions[arrayIndex], circuitKey);
         }, 1);
 
-        exports.workingCopies.circuits[workingCopy[0]].parsedCircuit.instructions = instructions;
+        common.workingCopies.circuits[workingCopy[0]].parsedCircuit.instructions = instructions;
       },
       writeCircuit: (workingCopy) => {
         return new Promise((resolve, reject) => {
@@ -768,6 +771,6 @@
     };
   })();
 
-  window.consoleExports = exports;
+  window.consoleExports = common;
 
 })();
