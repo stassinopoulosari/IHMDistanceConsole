@@ -1,12 +1,15 @@
-(() => {
+(function() {
 
   //Globals
-  var db = firebase.firestore();
-  var common = {
-    workingCopies: {}
-  };
+  var db = firebase.firestore(),
+    ct = (f) => {
+      setTimeout(f, 1);
+    },
+    common = {
+      workingCopies: {}
+    };
 
-  (() => {
+  (function() {
     //BLOCK — Sanitize
 
     common.sanitize = (text) => {
@@ -19,8 +22,9 @@
 
   })();
 
-  (() => {
+  (function() {
     //BLOCK — Global Keydowns & hook
+
 
     common.keysCurrentlyPressed = {};
     document.onkeydown = (e) => {
@@ -30,10 +34,9 @@
       common.keysCurrentlyPressed[e.code] = false;
     };
 
-
   })();
 
-  (() => {
+  (function() {
     //BLOCK — Authentication
 
     firebase.auth().onAuthStateChanged(function(user) {
@@ -54,7 +57,7 @@
 
   })();
 
-  (() => {
+  (function() {
     //BLOCK — Categories
 
     var loadCategories = () => {
@@ -81,7 +84,7 @@
   })();
 
 
-  (() => {
+  (function() {
     //BLOCK — Circuits
     var loadCircuits = () => {
       return new Promise((resolve, reject) => {
@@ -124,7 +127,7 @@
 
   })();
 
-  (() => {
+  (function() {
     //BLOCK — categories
     var beginCategoriesView = () => {
         return new Promise((resolve, reject) => {
@@ -142,9 +145,9 @@
                 .filter((category) => category.data.header)
                 .forEach((category) => {
                   $categoriesList.innerHTML += generateCategoryEditRow(category);
-                  setTimeout(() => {
-                    linkUpCategoryEditRow($categoriesList.querySelector(".console-category-edit-row[data-categoryref='" + category.key + "']"));
-                  }, 1);
+                  ct(() =>
+                    linkUpCategoryEditRow($categoriesList.querySelector(".console-category-edit-row[data-categoryref='" + category.key + "']"))
+                  );
                 });
               resolve();
             }).catch((x) => {
@@ -183,9 +186,9 @@
               data: newCategoryObject
             });
             $row.insertAdjacentHTML("afterend", newRow);
-            setTimeout(() => {
-              linkUpCategoryEditRow(document.querySelector(".console-category-edit-row[data-categoryref='" + newCategoryKey + "']"));
-            }, 1);
+            ct(() =>
+              linkUpCategoryEditRow(document.querySelector(".console-category-edit-row[data-categoryref='" + newCategoryKey + "']"))
+            );
           };
         });
 
@@ -247,10 +250,10 @@
     $unfocusCategoriesButton.onclick = windDownCategoriesView;
   })();
 
-  (() => {
+  (function() {
     //BLOCK — Circuit
 
-    var activateCircuitView = () => {
+    var activateCircuitView = function() {
         $focusCircuitsButton.disabled = true;
         $focusCircuitsButton.innerText = "Loading...";
         beginCircuitConsole().catch((x) => console.error(x)).then(() => {
@@ -260,7 +263,7 @@
           $console.setAttribute("class", [].slice.call($console.classList).join(" ").replace("d-none", "d-block"));
         });
       },
-      beginCircuitConsole = () => {
+      beginCircuitConsole = function() {
         return new Promise((resolve, reject) => {
           var $circuitsList = document.getElementById("console-circuitsConsole-circuitsList");
           $circuitsList.innerHTML = document.getElementById("console-template-newCircuitRow").innerHTML;
@@ -317,8 +320,8 @@
           }).catch((x) => reject(x));
         });
       },
-      linkControlsAndNewCircuit = ($circuitsList, categoryOptions) => {
-        setTimeout(() => {
+      linkControlsAndNewCircuit = function($circuitsList, categoryOptions) {
+        ct(() => {
           var $createCircuitButton = $circuitsList.querySelector(".console-circuits-newCircuitRow-createButton");
           var $createCircuitSelectorNC = $circuitsList.querySelector(".console-circuits-newCircuitRow-category");;
           $createCircuitButton.onclick = () => {
@@ -361,16 +364,16 @@
                     .replace(/%instructionType%/g, common.sanitize(instruction.type))
                     .replace(/%key%/g, common.sanitize(circuitKey))
                     .replace(/%instructionIndex%/g, common.sanitize(instruction.uuid));
-                  setTimeout(() => {
-                    linkHighLevelControlsForInstruction(newCircuit, circuitKey, instructionUUID, instruction);
-                  }, 1);
+                  ct(() =>
+                    linkHighLevelControlsForInstruction(newCircuit, circuitKey, instructionUUID, instruction)
+                  );
                 });
               })
               .catch((x) => console.error(x));
           };
-        }, 1);
+        });
       },
-      linkHighLevelControlsForInstruction = (newCircuit, circuitKey, instructionUUID, instruction) => {
+      linkHighLevelControlsForInstruction = function(newCircuit, circuitKey, instructionUUID, instruction) {
         var $selector = document.querySelector(".console-circuit-instruction-instructionType[data-circuitkey='" + common.sanitize(circuitKey) + "'][data-instructionindex='" + common.sanitize(instructionUUID) + "']");
         $selector.value = instruction.type;
         $selector.onchange = () => {
@@ -379,9 +382,9 @@
 
         var $controlsContainer = document.querySelector(".console-circuit-instructionEditor[data-circuitkey='" + common.sanitize(circuitKey) + "'][data-instructionindex='" + common.sanitize(instructionUUID) + "']");
         $controlsContainer.innerHTML = buildControlsForInstruction(instruction);
-        setTimeout(() => {
-          common.linkControlsForInstruction($controlsContainer, instruction, circuitKey);
-        }, 1);
+        ct(() =>
+          common.linkControlsForInstruction($controlsContainer, instruction, circuitKey)
+        );
 
         var $addButton = document.querySelector(".console-circuit-instruction-addButton[data-circuitkey='" + common.sanitize(circuitKey) + "'][data-instructionindex='" + common.sanitize(instructionUUID) + "']");
         $addButton.onclick = () => {
@@ -393,13 +396,13 @@
           common.dataUtilities.deleteExercise(circuitKey, instructionUUID, $deleteButton.parentNode.parentNode.parentNode.parentNode.parentNode);
         };
 
-        setTimeout(() => {
-          document.querySelector(".console-circuit-categorySelect[data-circuitKey='" + circuitKey + "']").value = newCircuit.category;
-        }, 1);
+        ct(() =>
+          document.querySelector(".console-circuit-categorySelect[data-circuitKey='" + circuitKey + "']").value = newCircuit.category
+        );
 
-        setTimeout(() => resolveAllCircuitRows(), 1);
+        ct(resolveAllCircuitRows);
       }
-      resolveAllCircuitRows = () => {
+    resolveAllCircuitRows = function() {
         [].slice
           .call(document.getElementsByClassName("console-circuit-categorySelect"))
           .forEach(($categorySelect) => {
@@ -478,7 +481,7 @@
             };
           });
       },
-      createCircuitRow = ($circuitsList, circuit, categoryOptions) => {
+      createCircuitRow = function($circuitsList, circuit, categoryOptions) {
         var name = circuit.storedDocument.title,
           circuitKey = circuit.circuitID,
           instructions = circuit.parsedCircuit.instructions;
@@ -488,9 +491,9 @@
           .replace(/%name%/g, common.sanitize(name))
           .replace(/%options%/g, categoryOptions);
 
-        setTimeout(() => {
+        ct(() => {
           document.querySelector(".console-circuit-categorySelect[data-circuitKey='" + circuitKey + "']").value = circuit.storedDocument.category;
-        }, 1);
+        });
         var $circuitEditList = [].slice
           .call(document.getElementsByClassName("console-circuit-edit-list"))
           .filter(($list) => {
@@ -503,7 +506,7 @@
             .replace(/%instructionType%/g, common.sanitize(instruction.type))
             .replace(/%key%/g, common.sanitize(circuitKey))
             .replace(/%instructionIndex%/g, common.sanitize(instruction.uuid));
-          setTimeout(() => {
+          ct(() => {
             var $selector = document.querySelector(".console-circuit-instruction-instructionType[data-circuitkey='" + common.sanitize(circuitKey) + "'][data-instructionindex='" + common.sanitize(instructionUUID) + "']");
             $selector.value = instruction.type;
             $selector.onchange = () => {
@@ -512,27 +515,21 @@
 
             var $controlsContainer = document.querySelector(".console-circuit-instructionEditor[data-circuitkey='" + common.sanitize(circuitKey) + "'][data-instructionindex='" + common.sanitize(instructionUUID) + "']");
             $controlsContainer.innerHTML = buildControlsForInstruction(instruction);
-            setTimeout(() => {
-              common.linkControlsForInstruction($controlsContainer, instruction, circuitKey);
-            }, 1);
+            ct(() => common.linkControlsForInstruction($controlsContainer, instruction, circuitKey));
 
             var $addButton = document.querySelector(".console-circuit-instruction-addButton[data-circuitkey='" + common.sanitize(circuitKey) + "'][data-instructionindex='" + common.sanitize(instructionUUID) + "']");
-            $addButton.onclick = () => {
-              common.dataUtilities.insertExercise(circuitKey, instructionUUID);
-            };
+            $addButton.onclick = () => common.dataUtilities.insertExercise(circuitKey, instructionUUID);;
 
             var $deleteButton = document.querySelector(".console-circuit-instruction-deleteButton[data-circuitkey='" + common.sanitize(circuitKey) + "'][data-instructionindex='" + common.sanitize(instructionUUID) + "']");
-            $deleteButton.onclick = () => {
-              common.dataUtilities.deleteExercise(circuitKey, instructionUUID, $deleteButton.parentNode.parentNode.parentNode.parentNode.parentNode);
-            };
+            $deleteButton.onclick = () => common.dataUtilities.deleteExercise(circuitKey, instructionUUID, $deleteButton.parentNode.parentNode.parentNode.parentNode.parentNode);;
 
-          }, 1);
+          });
         });
       },
-      linkControlsForInstruction = ($instructionControls, instruction, circuitKey) => {
+      linkControlsForInstruction = function($instructionControls, instruction, circuitKey) {
         var instructionType = instruction.type,
           uuid = instruction.uuid,
-          findIndices = () => {
+          findIndices = function() {
             var workingCopy = (() => common.workingCopies.circuits.map((circuit, i) => [i, circuit]).filter((circuit) => circuit[1].circuitID == circuitKey)[0])(),
               instructions = workingCopy[1].parsedCircuit.instructions,
               arrayIndex = (() => instructions.map((instruction, i) => [i, instruction]).filter((instruction) => {
@@ -586,7 +583,7 @@
             break;
         }
       },
-      buildControlsForInstruction = (instruction) => {
+      buildControlsForInstruction = function(instruction) {
         var instructionType = instruction.type,
           template = tokenTemplates[instructionType];
         switch (instructionType) {
@@ -608,7 +605,7 @@
               .replace(/%exerciseLength%/g, common.sanitize(instruction.data.length));
         }
       },
-      deactivateCircuitView = () => {
+      deactivateCircuitView = function() {
         $prelimContainer.style.display = "block";
         $console.setAttribute("class", [].slice.call($console.classList).join(" ").replace("d-block", "d-none"));
         $focusCircuitsButton.disabled = false;
@@ -648,10 +645,10 @@
 
   })();
 
-  (() => {
+  (function () {
     //BLOCK — Data Utilities
     common.dataUtilities = {
-      insertExercise: (circuitKey, uuidBefore) => {
+      insertExercise: function(circuitKey, uuidBefore) {
         var workingCopy = (() => common.workingCopies.circuits.map((circuit, i) => [i, circuit]).filter((circuit) => circuit[1].circuitID == circuitKey)[0])(),
           instructions = workingCopy[1].parsedCircuit.instructions,
           $elementAfter = document.querySelector(".console-circuit-instruction-row[data-circuitkey='" + circuitKey + "'][data-instructionindex='" + uuidBefore + "']"),
@@ -673,7 +670,7 @@
         });
         common.workingCopies.circuits[workingCopy[0]].parsedCircuit.instructions = instructions;
         $elementAfter.insertAdjacentHTML("afterend", toInsert);
-        setTimeout(() => {
+        ct(() => {
           var $selector = document.querySelector(".console-circuit-instruction-instructionType[data-circuitkey='" + common.sanitize(circuitKey) + "'][data-instructionindex='" + common.sanitize(newUUID) + "']");
           $selector.value = "interruption";
           $selector.onchange = () => {
@@ -688,9 +685,9 @@
           $deleteButton.onclick = () => {
             common.dataUtilities.deleteExercise(circuitKey, newUUID, $deleteButton.parentNode.parentNode.parentNode.parentNode.parentNode);
           };
-        }, 1);
+        });
       },
-      deleteExercise: (circuitKey, uuid, $instructionRow) => {
+      deleteExercise: function(circuitKey, uuid, $instructionRow) {
         var workingCopy = (() => common.workingCopies.circuits.map((circuit, i) => [i, circuit]).filter((circuit) => circuit[1].circuitID == circuitKey)[0])(),
           instructions = workingCopy[1].parsedCircuit.instructions,
           arrayIndex = (() => {
@@ -705,7 +702,7 @@
         instructions.splice(arrayIndex, 1);
         $instructionRow.parentNode.removeChild($instructionRow);
       },
-      handleExerciseTypeChange: (circuitKey, uuid, newType) => {
+      handleExerciseTypeChange: function(circuitKey, uuid, newType) {
         var workingCopy = (() => common.workingCopies.circuits.map((circuit, i) => [i, circuit]).filter((circuit) => circuit[1].circuitID == circuitKey)[0])(),
           instructions = workingCopy[1].parsedCircuit.instructions,
           arrayIndex = (() => {
@@ -755,13 +752,13 @@
 
         $circuitEditor.innerHTML = common.buildControlsForInstruction(instructions[arrayIndex]);
 
-        setTimeout(() => {
-          common.linkControlsForInstruction($circuitEditor, instructions[arrayIndex], circuitKey);
-        }, 1);
+        ct(() =>
+          common.linkControlsForInstruction($circuitEditor, instructions[arrayIndex], circuitKey)
+        );
 
         common.workingCopies.circuits[workingCopy[0]].parsedCircuit.instructions = instructions;
       },
-      writeCircuit: (workingCopy) => {
+      writeCircuit: function(workingCopy) {
         return new Promise((resolve, reject) => {
           var circuitKey = workingCopy.circuitID,
             instructions = workingCopy.parsedCircuit.instructions

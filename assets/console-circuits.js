@@ -1,4 +1,4 @@
-(() => {
+(function() {
   //BLOCK — Global Variables
 
   var commandSeparator = ";",
@@ -10,7 +10,7 @@
       "repExercise": "rex",
       "interruption": "int"
     },
-    invert = (object) => {
+    invert = function(object) {
       var invertedObject = {};
       for (var key in object) {
         invertedObject[object[key]] = key;
@@ -24,9 +24,9 @@
     tokenCommands: tokenCommands
   };
 
-  (() => {
+  (function() {
     //BLOCK — Parse Circuit
-    var parseCircuit = (circuitText) => {
+    var parseCircuit = function(circuitText) {
         var circuitData = {
           name: "",
           instructions: []
@@ -161,10 +161,10 @@
     exports.generateUUID = generateUUID;
   })();
 
-  (() => {
+  (function() {
     //BLOCK — Write Circuit
 
-    var writeCircuit = (instructions) => {
+    var writeCircuit = function(instructions) {
           var cumulativeStartTime = 0,
           instructionsString = instructions.map((instruction) => {
             var instructionType = instruction.type,
@@ -200,7 +200,7 @@
           }).join("");
         return instructionsString;
       },
-      writeInstruction = (instructionType, arguments) => {
+      writeInstruction = function(instructionType, arguments) {
         arguments.unshift(commandTokens[instructionType]);
         return arguments.join(paramSeparator) + commandSeparator;
       };
