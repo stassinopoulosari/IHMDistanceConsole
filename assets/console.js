@@ -362,33 +362,7 @@
                     .replace(/%key%/g, common.sanitize(circuitKey))
                     .replace(/%instructionIndex%/g, common.sanitize(instruction.uuid));
                   setTimeout(() => {
-                    var $selector = document.querySelector(".console-circuit-instruction-instructionType[data-circuitkey='" + common.sanitize(circuitKey) + "'][data-instructionindex='" + common.sanitize(instructionUUID) + "']");
-                    $selector.value = instruction.type;
-                    $selector.onchange = () => {
-                      common.dataUtilities.handleExerciseTypeChange(circuitKey, instructionUUID, $selector.value);
-                    }
-
-                    var $controlsContainer = document.querySelector(".console-circuit-instructionEditor[data-circuitkey='" + common.sanitize(circuitKey) + "'][data-instructionindex='" + common.sanitize(instructionUUID) + "']");
-                    $controlsContainer.innerHTML = buildControlsForInstruction(instruction);
-                    setTimeout(() => {
-                      common.linkControlsForInstruction($controlsContainer, instruction, circuitKey);
-                    }, 1);
-
-                    var $addButton = document.querySelector(".console-circuit-instruction-addButton[data-circuitkey='" + common.sanitize(circuitKey) + "'][data-instructionindex='" + common.sanitize(instructionUUID) + "']");
-                    $addButton.onclick = () => {
-                      common.dataUtilities.insertExercise(circuitKey, instructionUUID);
-                    };
-
-                    var $deleteButton = document.querySelector(".console-circuit-instruction-deleteButton[data-circuitkey='" + common.sanitize(circuitKey) + "'][data-instructionindex='" + common.sanitize(instructionUUID) + "']");
-                    $deleteButton.onclick = () => {
-                      common.dataUtilities.deleteExercise(circuitKey, instructionUUID, $deleteButton.parentNode.parentNode.parentNode.parentNode.parentNode);
-                    };
-
-                    setTimeout(() => {
-                      document.querySelector(".console-circuit-categorySelect[data-circuitKey='" + circuitKey + "']").value = newCircuit.category;
-                    }, 1);
-
-                    setTimeout(() => resolveAllCircuitRows(), 1);
+                    linkHighLevelControlsForInstruction(newCircuit, circuitKey, instructionUUID, instruction);
                   }, 1);
                 });
               })
@@ -396,6 +370,35 @@
           };
         }, 1);
       },
+      linkHighLevelControlsForInstruction = (newCircuit, circuitKey, instructionUUID, instruction) => {
+        var $selector = document.querySelector(".console-circuit-instruction-instructionType[data-circuitkey='" + common.sanitize(circuitKey) + "'][data-instructionindex='" + common.sanitize(instructionUUID) + "']");
+        $selector.value = instruction.type;
+        $selector.onchange = () => {
+          common.dataUtilities.handleExerciseTypeChange(circuitKey, instructionUUID, $selector.value);
+        }
+
+        var $controlsContainer = document.querySelector(".console-circuit-instructionEditor[data-circuitkey='" + common.sanitize(circuitKey) + "'][data-instructionindex='" + common.sanitize(instructionUUID) + "']");
+        $controlsContainer.innerHTML = buildControlsForInstruction(instruction);
+        setTimeout(() => {
+          common.linkControlsForInstruction($controlsContainer, instruction, circuitKey);
+        }, 1);
+
+        var $addButton = document.querySelector(".console-circuit-instruction-addButton[data-circuitkey='" + common.sanitize(circuitKey) + "'][data-instructionindex='" + common.sanitize(instructionUUID) + "']");
+        $addButton.onclick = () => {
+          common.dataUtilities.insertExercise(circuitKey, instructionUUID);
+        };
+
+        var $deleteButton = document.querySelector(".console-circuit-instruction-deleteButton[data-circuitkey='" + common.sanitize(circuitKey) + "'][data-instructionindex='" + common.sanitize(instructionUUID) + "']");
+        $deleteButton.onclick = () => {
+          common.dataUtilities.deleteExercise(circuitKey, instructionUUID, $deleteButton.parentNode.parentNode.parentNode.parentNode.parentNode);
+        };
+
+        setTimeout(() => {
+          document.querySelector(".console-circuit-categorySelect[data-circuitKey='" + circuitKey + "']").value = newCircuit.category;
+        }, 1);
+
+        setTimeout(() => resolveAllCircuitRows(), 1);
+      }
       resolveAllCircuitRows = () => {
         [].slice
           .call(document.getElementsByClassName("console-circuit-categorySelect"))
