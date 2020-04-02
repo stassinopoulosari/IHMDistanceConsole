@@ -33,6 +33,7 @@
         location.assign("./console");
       });
 
+      return true;
   };
 
   $email.onkeydown = $password.onkeydown = (e) => {
