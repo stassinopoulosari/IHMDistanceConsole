@@ -188,7 +188,7 @@
                 ];
                 break;
               case "repExercise":
-                arguments = [instruction.data.exerciseName, instruction.data.reps];
+                arguments = [instruction.data.exerciseName, instruction.data.reps == "" ? " " : instruction.data.reps];
                 break;
               case "interruption":
                 arguments = [];
