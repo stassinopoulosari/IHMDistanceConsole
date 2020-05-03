@@ -82,6 +82,32 @@
 
   })();
 
+  (() => {
+    //BLOCK — Lock
+    firebase.database().ref("lock").on("value", (lockSnapshot, error) => {
+      if (error) {
+        alert("Sorry! You've been locked out. Ask the other users who is online or send Ari a text and he will remove the lock.");
+        location.assign("..");
+      }
+      var lock = lockSnapshot.val();
+      if (lock && lock.user && lock.user != firebase.auth().currentUser.uid) {
+        console.log("fail condition");
+        alert("Sorry! You've been locked out. Ask the other users who is online or send Ari a text and he will remove the lock.");
+        location.assign("..");
+      } else {
+        firebase.database().ref("lock").set({
+          user: firebase.auth().currentUser.uid
+        }, (error) => {
+          if (error) {
+            console.log("fail condition ", error);
+            return;
+          }
+          firebase.database().ref("lock").onDisconnect().remove();
+        })
+      }
+    });
+  })();
+
   (function() {
     //BLOCK — Categories
 
